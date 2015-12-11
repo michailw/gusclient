@@ -3,32 +3,9 @@
 namespace MWojtowicz\GusClient;
 
 use MWojtowicz\GusClient\Exception;
-/*use MWojtowicz\GusClient\Exception\NotFound;
-use MWojtowicz\GusClient\Exception\InvalidRegon;
-use MWojtowicz\GusClient\Exception\InvalidNip;
-use MWojtowicz\GusClient\Exception\TooMuchInputData;
-use MWojtowicz\GusClient\Exception\InvalidData;*/
 use DeathByCaptcha;
 
-class Client extends \SoapClient {
-
-    const URL_TEST = 'https://wyszukiwarkaregontest.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svc';
-    const URL_PRODUCTION = 'https://wyszukiwarkaregon.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svc';
-
-    const URL_WSDL_TEST = "https://wyszukiwarkaregontest.stat.gov.pl/wsBIR/wsdl/UslugaBIRzewnPubl.xsd";
-    const URL_WSDL_PRODUCTION = "https://wyszukiwarkaregontest.stat.gov.pl/wsBIR/wsdl/UslugaBIRzewnPubl.xsd";
-
-    const SESSIONFILE_NAME = 'gusapi.session';
-
-    const MODE_PRODUCTION = 'PRODUCTION';
-    const MODE_TEST = 'TEST';
-
-    const STATUS_AVAILABLE = 'AVAILABLE';
-    const STATUS_UNAVAILABLE = 'UNAVAILABLE';
-    const STATUS_TECHNICALBREAK = 'TECHNICALBREAK';
-
-    const SESSION_ALIVE = 'ALIVE';
-    const SESSION_DEAD = 'DEAD';
+class Client extends \SoapClient implements Constants {
 
     private static $methodUrls = array(
         'Zaloguj' => 'http://CIS/BIR/PUBL/2014/07/IUslugaBIRzewnPubl/Zaloguj',
@@ -41,19 +18,6 @@ class Client extends \SoapClient {
         'PobierzCaptcha' => 'http://CIS/BIR/2014/07/IUslugaBIR/PobierzCaptcha',
         'SprawdzCaptcha' => 'http://CIS/BIR/2014/07/IUslugaBIR/SprawdzCaptcha'
     );
-
-    private $_userKey;
-    private $_sessionId;
-
-    private $_sessionFile;
-
-    private $_mode;
-
-    private $_streamContext;
-
-    private $dbcUser;
-    private $dbcPass;
-    private $dbcClient;
 
     /**
      * GUS Client constructor.
@@ -135,7 +99,7 @@ class Client extends \SoapClient {
 
             $decodedText = null;
 
-            if($this->_mode == self::MODE_PRODUCTION){
+            if($this->_mode == static::MODE_PRODUCTION){
                 if ($this->dbcClient == null) {
                     $this->dbcClient = new DeathByCaptcha\SocketClient($this->dbcUser, $this->dbcPass);
                 }
@@ -158,7 +122,7 @@ class Client extends \SoapClient {
                     'pCaptcha' => $decodedText
                 ))->SprawdzCaptchaResult;
 
-                if ($this->_mode == self::MODE_PRODUCTION && !$checkCaptcha && !empty($captcha)) {
+                if ($this->_mode == static::MODE_PRODUCTION && !$checkCaptcha && !empty($captcha)) {
                     $this->dbcClient->report($captcha['captcha']);
                 }
             }
@@ -420,11 +384,11 @@ class Client extends \SoapClient {
     public function getServiceStatus(){
         $status = $this->getValue('StatusUslugi');
         switch($status){
-            case 2: return self::STATUS_TECHNICALBREAK;
-            case 1: return self::STATUS_AVAILABLE;
+            case 2: return static::STATUS_TECHNICALBREAK;
+            case 1: return static::STATUS_AVAILABLE;
             case 0:
             default:
-                return self::STATUS_UNAVAILABLE;
+                return static::STATUS_UNAVAILABLE;
         }
     }
 
@@ -435,10 +399,10 @@ class Client extends \SoapClient {
     public function getSessionStatus(){
         $status = (int) $this->getValue('StatusSesji');
         switch($status){
-            case 1: return self::SESSION_ALIVE;
+            case 1: return static::SESSION_ALIVE;
             case 0:
             default:
-                return self::SESSION_DEAD;
+                return static::SESSION_DEAD;
         }
     }
 
@@ -464,8 +428,8 @@ class Client extends \SoapClient {
      */
     private function _getServiceUrl(){
         switch($this->_mode){
-            case self::MODE_PRODUCTION: return self::URL_PRODUCTION;
-            default: return self::URL_TEST;
+            case static::MODE_PRODUCTION: return static::URL_PRODUCTION;
+            default: return static::URL_TEST;
         }
     }
 
@@ -476,8 +440,8 @@ class Client extends \SoapClient {
      */
     private function _getWsdlUrl(){
         switch($this->_mode){
-            case self::MODE_PRODUCTION: return self::URL_WSDL_PRODUCTION;
-            default: return self::URL_WSDL_TEST;
+            case static::MODE_PRODUCTION: return static::URL_WSDL_PRODUCTION;
+            default: return static::URL_WSDL_TEST;
         }
     }
 
@@ -516,7 +480,7 @@ class Client extends \SoapClient {
             if(!empty($session)){
                 $this->_setStreamContextSession($session);
                 $sessionStatus = $this->getSessionStatus();
-                if($sessionStatus==self::SESSION_ALIVE){
+                if($sessionStatus==static::SESSION_ALIVE){
                     $this->_sessionId = $session;
                     $this->_setStreamContextSession(null);
                 }
@@ -534,7 +498,7 @@ class Client extends \SoapClient {
      * @return string
      */
     private function readSessionFile(){
-        $filePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . self::SESSIONFILE_NAME;
+        $filePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . static::SESSIONFILE_NAME;
         $sessionFileExists = file_exists($filePath);
 
         if($this->_sessionFile==null){
