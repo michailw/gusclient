@@ -7,7 +7,8 @@ GUS API Client
 
 # 2. Usage
 
-```
+```php
+<?php
 $client = new MWojtowicz\GusClient\Client(GUS_API_USER_KEY, DEATHBYCAPTCHA_USERNAME, DEATHBYCAPTCHA_PASSWORD);
 
 $company   = $client->findByNip('1234567890');
