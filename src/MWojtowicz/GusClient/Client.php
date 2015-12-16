@@ -20,6 +20,43 @@ class Client extends \SoapClient implements Constants {
     );
 
     /**
+     * @var string User Key from GUS
+     */
+    private $_userKey;
+    /**
+     * @var string current session id
+     */
+    private $_sessionId;
+
+    /**
+     * @var resource file handler for session store
+     */
+    private $_sessionFile;
+
+    /**
+     * @var string mode of this tool, possible values: TEST, PRODUCTION
+     */
+    private $_mode;
+
+    /**
+     * @var resource stream context handler for \SoapClient
+     */
+    private $_streamContext;
+
+    /**
+     * @var string DeathByCaptcha login
+     */
+    private $dbcUser;
+    /**
+     * @var string DeathByCaptcha password
+     */
+    private $dbcPass;
+    /**
+     * @var DeathByCaptcha\Client
+     */
+    private $dbcClient;
+
+    /**
      * GUS Client constructor.
      * @param mixed $userKey - GUS API key
      * @param array $deathByCaptchaUser - DeathByCaptcha login
@@ -503,6 +540,13 @@ class Client extends \SoapClient implements Constants {
 
         if($this->_sessionFile==null){
             $this->_sessionFile = fopen($filePath, $sessionFileExists ? 'r+' : 'w');
+
+            if(!$this->_sessionFile){
+                $pid = getmypid();
+                $filePath .= '.'.$pid;
+                $sessionFileExists = file_exists($filePath);
+                $this->_sessionFile = fopen($filePath, $sessionFileExists ? 'r+' : 'w');
+            }
         }
 
         if($sessionFileExists) {
