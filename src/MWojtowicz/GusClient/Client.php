@@ -55,6 +55,10 @@ class Client extends \SoapClient implements Constants {
      * @var DeathByCaptcha\Client
      */
     private $dbcClient;
+    /**
+     * @var bool debug mode - more output to console
+     */
+    private $debugMode = false;
 
     /**
      * GUS Client constructor.
@@ -62,11 +66,13 @@ class Client extends \SoapClient implements Constants {
      * @param array $deathByCaptchaUser - DeathByCaptcha login
      * @param $deathByCaptchaPassword - DeathByCaptcha password
      * @param string $mode - possible values: TEST, PRODUCTION
+     * @param bool $debugMode
      * @param array $soapOptions http://php.net/manual/en/soapclient.soapclient.php
      */
-    public function __construct($userKey, $deathByCaptchaUser, $deathByCaptchaPassword, $mode='TEST', $soapOptions=array()){
+    public function __construct($userKey, $deathByCaptchaUser, $deathByCaptchaPassword, $mode='TEST', $soapOptions=array(), $debugMode = false){
         $this->_userKey = $userKey;
         $this->_mode = $mode;
+        $this->debugMode = $debugMode;
 
         if(empty($soapOptions['stream_context'])){
             $soapOptions['stream_context'] = stream_context_create();
@@ -96,7 +102,7 @@ class Client extends \SoapClient implements Constants {
     private function _solveError(){
         $errorCode = (int) $this->getValue('KomunikatKod');
         $errorMessage = $this->getValue('KomunikatTresc');
-        echo 'Error: '.$errorCode.' - '.$errorMessage."\n";
+        $this->debug('Error: '.$errorCode.' - '.$errorMessage);
 
         switch($errorCode){
             case 1: $this->solveCaptcha(); break;
@@ -136,6 +142,8 @@ class Client extends \SoapClient implements Constants {
 
             $decodedText = null;
 
+            $this->debug('Captcha: '.$result."\n");
+
             if($this->_mode == static::MODE_PRODUCTION){
                 if ($this->dbcClient == null) {
                     $this->dbcClient = new DeathByCaptcha\SocketClient($this->dbcUser, $this->dbcPass);
@@ -158,6 +166,9 @@ class Client extends \SoapClient implements Constants {
                 $checkCaptcha = parent::SprawdzCaptcha(array(
                     'pCaptcha' => $decodedText
                 ))->SprawdzCaptchaResult;
+
+
+                $this->debug('Sprawdz captcha: '.$checkCaptcha."\n");
 
                 if ($this->_mode == static::MODE_PRODUCTION && !$checkCaptcha && !empty($captcha)) {
                     $this->dbcClient->report($captcha['captcha']);
@@ -540,18 +551,12 @@ class Client extends \SoapClient implements Constants {
 
         if($this->_sessionFile==null){
             $this->_sessionFile = fopen($filePath, $sessionFileExists ? 'r+' : 'w');
-
-            if(!$this->_sessionFile){
-                $pid = getmypid();
-                $filePath .= '.'.$pid;
-                $sessionFileExists = file_exists($filePath);
-                $this->_sessionFile = fopen($filePath, $sessionFileExists ? 'r+' : 'w');
-            }
         }
 
         if($sessionFileExists) {
-            $session = fread($this->_sessionFile, 100);
-            return trim($session);
+            $session = trim(fread($this->_sessionFile, 100));
+            $this->debug("Found active session with ID: {$session}");
+            return $session;
         }
     }
 
@@ -587,6 +592,7 @@ class Client extends \SoapClient implements Constants {
         }
         ftruncate($this->_sessionFile, 0);
         fwrite($this->_sessionFile, $this->_sessionId.PHP_EOL);
+        $this->debug("Saved new session with ID: {$sessionId}");
     }
 
     /**
@@ -610,6 +616,12 @@ class Client extends \SoapClient implements Constants {
     public function __destruct(){
         if($this->_sessionFile){
             fclose($this->_sessionFile);
+        }
+    }
+
+    private function debug($message){
+        if($this->debugMode){
+            echo "\n".$message;
         }
     }
 }

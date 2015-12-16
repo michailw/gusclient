@@ -28,11 +28,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
     public static $data;
 
     public function testClient(){
-        $clientId = readline("Please type GUS client ID: ");
-        $dbcUser = readline("Please type DeathByCaptcha username: ");
-        $dbcPassword = readline("Please type DeathByCaptcha password: ");
 
-        $client = new GusClient\Client($clientId, $dbcUser, $dbcPassword);
+        $clientId = trim(readline("Please type GUS client ID: "));
+        $dbcUser = trim(readline("Please type DeathByCaptcha username: "));
+        $dbcPassword = trim(readline("Please type DeathByCaptcha password: "));
+
+        $client = new GusClient\Client($clientId, $dbcUser, $dbcPassword, 'TEST', array(), true);
 
         $onet = $client->findByNip(self::$data->Onet->nip);
         $this->assertEquals(self::$data->Onet->name, $onet->name);
