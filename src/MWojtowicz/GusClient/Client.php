@@ -61,6 +61,11 @@ class Client extends \SoapClient implements Constants {
     private $debugMode = false;
 
     /**
+     * @var string class which result item has to be casted
+     */
+    private $resultClassName;
+
+    /**
      * GUS Client constructor.
      * @param mixed $userKey - GUS API key
      * @param array $deathByCaptchaUser - DeathByCaptcha login
@@ -92,6 +97,14 @@ class Client extends \SoapClient implements Constants {
         $this->dbcPass = $deathByCaptchaPassword;
 
         $this->_prepareSession();
+    }
+
+    public function setResultClassName($className){
+        if(class_exists($className)) {
+            $this->resultClassName = $className;
+        } else {
+            throw new Exception\UndefinedResultClass();
+        }
     }
 
     /**
@@ -364,7 +377,7 @@ class Client extends \SoapClient implements Constants {
      * @return \stdClass
      */
     private function parseResult(\DOMElement $node){
-        $result = new \stdClass();
+        $result = new Result();
         if($node->hasChildNodes()){
             foreach($node->childNodes as $child){
                 if($child->nodeName=='Regon') $result->regon = $child->textContent;
@@ -380,20 +393,51 @@ class Client extends \SoapClient implements Constants {
                 if($child->nodeName=='SilosID') $result->silosID = (int) $child->textContent;
             }
 
-            switch($result->type){
-                case 'P': $result->typeDescription = 'jednostka prawna'; break;
-                case 'F': $result->typeDescription = 'jednostka fizyczna (os. fizyczna prowadząca działalność gospodarczą)'; break;
-                case 'LP': $result->typeDescription = 'jednostka lokalna jednostki prawnej'; break;
-                case 'LF': $result->typeDescription = 'jednostka lokalna jednostki fizycznej'; break;
+            if(!empty($result->type)) {
+                switch ($result->type) {
+                    case 'P':
+                        $result->typeDescription = 'jednostka prawna';
+                        break;
+                    case 'F':
+                        $result->typeDescription = 'jednostka fizyczna (os. fizyczna prowadząca działalność gospodarczą)';
+                        break;
+                    case 'LP':
+                        $result->typeDescription = 'jednostka lokalna jednostki prawnej';
+                        break;
+                    case 'LF':
+                        $result->typeDescription = 'jednostka lokalna jednostki fizycznej';
+                        break;
+                }
+            } else {
+                $result->type = '';
+                $result->typeDescription = '';
             }
 
-            switch($result->silosID){
-                case 1: $result->silosDescription = 'Miejsce prowadzenia działalności CEIDG'; break;
-                case 2: $result->silosDescription = 'Miejsce prowadzenia działalności Rolniczej'; break;
-                case 3: $result->silosDescription = 'Miejsce prowadzenia działalności pozostałej'; break;
-                case 4: $result->silosDescription = 'Miejsce prowadzenia działalności zlikwidowanej w starym systemie KRUPGN'; break;
-                case 6: $result->silosDescription = 'Miejsce prowadzenia działalności jednostki prawnej'; break;
+            if(!empty($result->silosID)) {
+                switch ($result->silosID) {
+                    case 1:
+                        $result->silosDescription = 'Miejsce prowadzenia działalności CEIDG';
+                        break;
+                    case 2:
+                        $result->silosDescription = 'Miejsce prowadzenia działalności Rolniczej';
+                        break;
+                    case 3:
+                        $result->silosDescription = 'Miejsce prowadzenia działalności pozostałej';
+                        break;
+                    case 4:
+                        $result->silosDescription = 'Miejsce prowadzenia działalności zlikwidowanej w starym systemie KRUPGN';
+                        break;
+                    case 6:
+                        $result->silosDescription = 'Miejsce prowadzenia działalności jednostki prawnej';
+                        break;
+                }
+            } else {
+                $result->silosID = '';
+                $result->silosDescription = '';
             }
+        }
+        if(!empty($this->resultClassName)){
+            $result = new $this->resultClassName($result);
         }
         return $result;
     }
