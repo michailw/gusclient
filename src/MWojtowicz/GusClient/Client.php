@@ -642,10 +642,10 @@ class Client extends \SoapClient implements Constants {
     /**
      * @overwrite
      */
-    public function __doRequest($req, $location, $action, $version = SOAP_1_2) {
+    public function __doRequest($req, $location, $action, $version = SOAP_1_2, $one_way = null) {
         $req = preg_replace('@<([a-z0-9]+):Action>[^<]+</([a-z0-9]+):Action>@','<$1:Action>'.$action.'</$2:Action>', $req);
         //echo chr(27) . "[0;33m" .$req. chr(27) . "[0m"."\n";
-        $response = parent::__doRequest($req, $location, $action, $version);
+        $response = parent::__doRequest($req, $location, $action, $version, $one_way);
         $matches = array();
         preg_match("@<s:Envelope.*</s:Envelope>@s", $response, $matches);
         if(!empty($matches)){
