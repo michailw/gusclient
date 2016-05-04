@@ -79,17 +79,23 @@ class Client extends \SoapClient implements Constants {
         $this->_mode = $mode;
         $this->debugMode = $debugMode;
 
+        if(!is_array($soapOptions)){
+            $soapOptions = array();
+        }
+
         if(empty($soapOptions['stream_context'])){
             $soapOptions['stream_context'] = stream_context_create();
         }
 
         $this->_streamContext = $soapOptions['stream_context'];
-
-        if(!is_array($soapOptions)){
-            $soapOptions = array();
-        }
         $soapOptions['soap_version'] = SOAP_1_2;
         $soapOptions['cache_wsdl'] = WSDL_CACHE_NONE;
+//        $soapOptions['encoding'] = 'UTF-8';
+//        $soapOptions['verifypeer'] = false;
+//        $soapOptions['verifyhost'] = false;
+//        $soapOptions['trace'] = 1;
+//        $soapOptions['exceptions'] = 1;
+        $soapOptions['location'] = $this->_getServiceUrl();
 
         parent::__construct($this->_getWsdlUrl(), $soapOptions);
 
@@ -140,8 +146,12 @@ class Client extends \SoapClient implements Constants {
 
         $checkCaptcha = false;
 
-        while(!$checkCaptcha) {
+        $captchaCheckCounter = 0;
+
+        while(!$checkCaptcha && $captchaCheckCounter<5) {
+            $captchaCheckCounter++;
             $result = parent::PobierzCaptcha()->PobierzCaptchaResult;
+//            $this->debug("PobierzCaptcha: ".print_r($result, true));
 
             if(empty($result)){
                 $checkCaptcha = true;
@@ -347,6 +357,10 @@ class Client extends \SoapClient implements Constants {
         $this->solveCaptcha();
 
         $result = parent::DaneSzukaj($params);
+//        $this->debug("DaneSzukaj: ".print_r($result, true));
+        if(empty($result->DaneSzukajResult)){
+            throw new \MWojtowicz\GusClient\Exception\NotFound();
+        }
         $xml = new \DOMDocument();
         $xml->loadXML($result->DaneSzukajResult);
         unset($result);
@@ -355,7 +369,7 @@ class Client extends \SoapClient implements Constants {
             $data = array();
             for($i=0; $i<$xml->documentElement->childNodes->length; $i++){
                 $node = $xml->documentElement->childNodes->item($i);
-                if(($node instanceof \DOMElement) && $node->tagName=='dane'){
+                if(($node instanceof \DOMElement) && $node->nodeName=='dane'){
                     $data[] = $this->parseResult($node);
                     $node->parentNode->removeChild($node);
                 }
@@ -365,7 +379,63 @@ class Client extends \SoapClient implements Constants {
                 $data = current($data);
             }
         } else {
-            throw Exception\NotFound();
+            throw new \MWojtowicz\GusClient\Exception\NotFound();
+        }
+        unset($result);
+
+        return $data;
+    }
+
+    public function getDetails($regon, $type='F'){
+        $headers = array(
+            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->_getMethodUrl('DaneSzukaj'), 0),
+            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->_getServiceUrl(), 0)
+        );
+        $this->__setSoapHeaders($headers);
+        $params = array(
+            'pRegon' => $regon
+        );
+
+        switch($type){
+            case 'F':
+            case 'LF':
+                $params['pNazwaRaportu'] = 'PublDaneRaportDzialalnoscFizycznejCeidg';
+                $prefix = 'fiz';
+                break;
+            case 'P':
+            case 'LP':
+                $params['pNazwaRaportu'] = 'PublDaneRaportPrawna';
+                $prefix = 'praw';
+        }
+
+        $this->solveCaptcha();
+
+        $result = parent::DanePobierzPelnyRaport($params);
+//        $this->debug('DanePobierzPelnyRaport: '.print_r($result, true));
+        if(empty($result->DanePobierzPelnyRaportResult)){
+            throw new \MWojtowicz\GusClient\Exception\NotFound();
+        }
+        $xml = new \DOMDocument();
+        $xml->loadXML($result->DanePobierzPelnyRaportResult);
+        unset($result);
+
+        if($xml->documentElement->hasChildNodes()){
+            $data = new \stdClass();
+
+            for($i=0; $i<$xml->documentElement->childNodes->length; $i++){
+                $node = $xml->documentElement->childNodes->item($i);
+                if($node->nodeName=='dane'){
+                    for($i=0; $i<$node->childNodes->length; $i++){
+                        $child = $node->childNodes->item($i);
+                        if($child->nodeName==$prefix.'_adSiedzNumerNieruchomosci') $data->house = $child->textContent;
+                        if($child->nodeName==$prefix.'_adSiedzNumerLokalu') $data->flat = $child->textContent;
+                        if($child->nodeName==$prefix.'_regon14') $data->regon = $child->textContent;
+                        if($child->nodeName==$prefix.'_nip') $data->nip = $child->textContent;
+                    }
+                }
+            }
+        } else {
+            throw new \MWojtowicz\GusClient\Exception\NotFound();
         }
 
         return $data;
@@ -392,6 +462,12 @@ class Client extends \SoapClient implements Constants {
                 if($child->nodeName=='Typ') $result->type = $child->textContent;
                 if($child->nodeName=='SilosID') $result->silosID = (int) $child->textContent;
             }
+//            $this->debug(print_r($result, true));
+            $details = $this->getDetails($result->regon, $result->type);
+            if(!empty($details->regon)) $result->regon = $details->regon;
+            if(!empty($details->nip)) $result->nip = $details->nip;
+            if(!empty($details->house)) $result->street .= ' '.$details->house;
+            if(!empty($details->flat)) $result->street .= '/'.$details->flat;
 
             if(!empty($result->type)) {
                 switch ($result->type) {
@@ -620,6 +696,10 @@ class Client extends \SoapClient implements Constants {
             throw new Exception\Login();
         }
 
+        $this->debug("pKluczUzytkownika: ".$this->_userKey);
+//        $this->debug("ZalogujResult: ".print_r($result, true));
+        $this->debug("Sesja: ".$result->ZalogujResult);
+
         $this->storeSession($result->ZalogujResult);
         $this->solveCaptcha();
     }
@@ -642,7 +722,7 @@ class Client extends \SoapClient implements Constants {
     /**
      * @overwrite
      */
-    public function __doRequest($req, $location, $action, $version = SOAP_1_2, $one_way = null) {
+    public function __doRequest($req, $location, $action, $version = SOAP_1_2, $one_way = 0) {
         $req = preg_replace('@<([a-z0-9]+):Action>[^<]+</([a-z0-9]+):Action>@','<$1:Action>'.$action.'</$2:Action>', $req);
         //echo chr(27) . "[0;33m" .$req. chr(27) . "[0m"."\n";
         $response = parent::__doRequest($req, $location, $action, $version, $one_way);
