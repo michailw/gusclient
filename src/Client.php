@@ -203,7 +203,7 @@ abstract class Client extends \SoapClient
                 $prefix = 'praw';
         }
 
-        $result = static::DanePobierzPelnyRaport($params);
+        $result = $this->DanePobierzPelnyRaport($params);
         if (empty($result->DanePobierzPelnyRaportResult)) {
             throw new Exception\NotFound();
         }
@@ -217,8 +217,8 @@ abstract class Client extends \SoapClient
             for ($i = 0; $i < $xml->documentElement->childNodes->length; $i++) {
                 $node = $xml->documentElement->childNodes->item($i);
                 if ($node->nodeName == 'dane') {
-                    for ($i = 0; $i < $node->childNodes->length; $i++) {
-                        $child = $node->childNodes->item($i);
+                    for ($j = 0; $j < $node->childNodes->length; $j++) {
+                        $child = $node->childNodes->item($j);
                         if ($child->nodeName == $prefix . '_adSiedzNumerNieruchomosci') $data->house = $child->textContent;
                         if ($child->nodeName == $prefix . '_adSiedzNumerLokalu') $data->flat = $child->textContent;
                         if ($child->nodeName == $prefix . '_regon14') $data->regon = $child->textContent;
@@ -262,26 +262,23 @@ abstract class Client extends \SoapClient
      */
     public function logout()
     {
-        if ($this->getSessionStatus()) {
+        $this->_setStreamContextSession(null);
+        $headers = [
+            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->_getMethodUrl('Wyloguj'), 0),
+            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->_getServiceUrl(), 0)
+        ];
+        $this->__setSoapHeaders($headers);
+
+        $result = $this->Wyloguj([
+            'pIdentyfikatorSesji' => $this->_sessionId
+        ])->WylogujResult;
+
+        if ($result) {
+            $this->storeSession(null);
             $this->_setStreamContextSession(null);
-            $headers = [
-                new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->_getMethodUrl('Wyloguj'), 0),
-                new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->_getServiceUrl(), 0)
-            ];
-            $this->__setSoapHeaders($headers);
-
-            $result = static::Wyloguj([
-                'pIdentyfikatorSesji' => $this->_sessionId
-            ])->WylogujResult;
-
-            if ($result) {
-                $this->storeSession(null);
-                $this->_setStreamContextSession(null);
-            }
-
-            return $result ? true : false;
         }
-        return true;
+
+        return $result ? true : false;
     }
 
     /**

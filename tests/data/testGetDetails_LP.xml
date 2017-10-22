@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root>
+    <dane>
+        <praw_adSiedzNumerNieruchomosci>1</praw_adSiedzNumerNieruchomosci>
+    </dane>
+    <dane>
+        <praw_adSiedzNumerLokalu>2</praw_adSiedzNumerLokalu>
+    </dane>
+    <dane>
+        <praw_regon14>12345678901234</praw_regon14>
+    </dane>
+    <dane>
+        <praw_nip>12345678901</praw_nip>
+    </dane>
+</root>
