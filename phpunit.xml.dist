@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <phpunit
         bootstrap="vendor/autoload.php"
+        convertErrorsToExceptions="true"
+        convertNoticesToExceptions="true"
+        convertWarningsToExceptions="true"
 >
     <testsuites>
-        <testsuite name="MWojtowicz Gus Test">
-            <directory>./src/MWojtowicz/GusClient/Tests</directory>
+        <testsuite name="GUS Client - Unit">
+            <directory>./tests</directory>
         </testsuite>
     </testsuites>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">/src</directory>
+        </whitelist>
+    </filter>
 </phpunit>

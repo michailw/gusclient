@@ -1,6 +1,8 @@
 GUS API Client
 ==============
 
+Travis build on master branch ![Travis build on master](https://travis-ci.org/MWojtowicz/gusclient.svg?branch=master)
+
 # 1. Installation
 
 `composer require mwojtowicz/gusclient`
@@ -9,7 +11,7 @@ GUS API Client
 
 ```php
 <?php
-$client = new MWojtowicz\GusClient\Client(GUS_API_USER_KEY, DEATHBYCAPTCHA_USERNAME, DEATHBYCAPTCHA_PASSWORD);
+$client = new MWojtowicz\GusClient\Client(<GUS_API_USER_KEY>);
 
 $company   = $client->findByNip('1234567890');
 $companies = $client->findByNip(array('1234567890', '9876054321'));
