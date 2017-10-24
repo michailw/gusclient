@@ -13,9 +13,6 @@ class ClientTest extends TestCase
      */
     private $client;
 
-    private const CLIENT_ID = "TEST_CLIENT";
-    private const CLIENT_MODE = "TEST";
-
     /**
      * @inheritdoc
      */
@@ -319,11 +316,11 @@ class ClientTest extends TestCase
         $client = $this
             ->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
-            ->setmethods(["setStreamContext", "__setSoapHeaders", "Wyloguj"])
+            ->setMethods(["setStreamContext", "__setSoapHeaders", "Wyloguj"])
             ->getMockForAbstractClass();
 
         $client
-            ->at(0)
+            ->expects($this->once())
             ->method("setStreamContext")
             ->with([]);
 
@@ -356,11 +353,11 @@ class ClientTest extends TestCase
         $client = $this
             ->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
-            ->setmethods(["setStreamContext", "__setSoapHeaders", "Wyloguj"])
+            ->setMethods(["setStreamContext", "__setSoapHeaders", "Wyloguj"])
             ->getMockForAbstractClass();
 
         $client
-            ->at(0)
+            ->expects($this->exactly(2))
             ->method("setStreamContext")
             ->with([]);
 
@@ -390,7 +387,40 @@ class ClientTest extends TestCase
      */
     public function testGetServiceStatus()
     {
+        $client = $this
+            ->getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["getApiValue"])
+            ->getMockForAbstractClass();
 
+        $client
+            ->expects($this->at(0))
+            ->method("getApiValue")
+            ->with("StatusUslugi")
+            ->willReturn(null);
+
+        $client
+            ->expects($this->at(1))
+            ->method("getApiValue")
+            ->with("StatusUslugi")
+            ->willReturn(0);
+
+        $client
+            ->expects($this->at(2))
+            ->method("getApiValue")
+            ->with("StatusUslugi")
+            ->willReturn(1);
+
+        $client
+            ->expects($this->at(3))
+            ->method("getApiValue")
+            ->with("StatusUslugi")
+            ->willReturn(2);
+
+        $this->assertEquals('UNAVAILABLE', $client->getServiceStatus());
+        $this->assertEquals('UNAVAILABLE', $client->getServiceStatus());
+        $this->assertEquals('AVAILABLE', $client->getServiceStatus());
+        $this->assertEquals('TECHNICALBREAK', $client->getServiceStatus());
     }
 
     /**
@@ -398,7 +428,33 @@ class ClientTest extends TestCase
      */
     public function testGetSessionStatus()
     {
+        $client = $this
+            ->getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["getApiValue"])
+            ->getMockForAbstractClass();
 
+        $client
+            ->expects($this->at(0))
+            ->method("getApiValue")
+            ->with("StatusSesji")
+            ->willReturn(1);
+
+        $client
+            ->expects($this->at(1))
+            ->method("getApiValue")
+            ->with("StatusSesji")
+            ->willReturn(0);
+
+        $client
+            ->expects($this->at(2))
+            ->method("getApiValue")
+            ->with("StatusSesji")
+            ->willReturn(null);
+
+        $this->assertEquals('ALIVE', $client->getSessionStatus());
+        $this->assertEquals('DEAD', $client->getSessionStatus());
+        $this->assertEquals('DEAD', $client->getSessionStatus());
     }
 
     /**
@@ -406,14 +462,46 @@ class ClientTest extends TestCase
      */
     public function testGetApiValue()
     {
+        $testData = "Parameter";
+        $returnData = " data ";
+        $expectation = "data";
 
+        $client = $this
+            ->getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["__setSoapHeaders", "GetValue"])
+            ->getMockForAbstractClass();
+
+        $client
+            ->expects($this->once())
+            ->method("__setSoapHeaders")
+            ->with([
+                new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', "http://CIS/BIR/2014/07/IUslugaBIR/GetValue", 0),
+                new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', "https://wyszukiwarkaregontest.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svc", 0)
+            ]);
+
+        $client
+            ->expects($this->once())
+            ->method("GetValue")
+            ->with([
+                "pNazwaParametru" => $testData
+            ])
+            ->willReturn((object) [
+                "GetValueResult" => $returnData
+            ]);
+
+        $result = $client->getApiValue($testData);
+
+        $this->assertEquals($expectation, $result);
     }
 
     /**
      * @see Client::__doRequest()
+     *
+     * @TODO Refactor method to make it testable
      */
     public function testDoRequest()
     {
-
+        $this->markTestIncomplete();
     }
 }
