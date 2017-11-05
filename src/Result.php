@@ -3,9 +3,85 @@
 namespace MWojtowicz\GusClient;
 
 class Result {
+    /**
+     * @var string
+     */
     public $regon;
 
+    /**
+     * @var string
+     */
+    public $nip;
+
+    /**
+     * @var string
+     */
+    public $regonLink;
+
+    /**
+     * @var string
+     */
+    public $name;
+
+    /**
+     * @var string
+     */
+    public $street;
+
+    /**
+     * @var string
+     */
+    public $house;
+
+    /**
+     * @var string
+     */
+    public $flat;
+
+    /**
+     * @var string
+     */
+    public $city;
+
+    /**
+     * @var string
+     */
+    public $postalCode;
+
+    /**
+     * @var string
+     */
+    public $commune;
+
+    /**
+     * @var string
+     */
+    public $county;
+
+    /**
+     * @var string
+     */
+    public $voivodeship;
+
+    /**
+     * @var int
+     */
+    public $silosID;
+
+    /**
+     * @var int
+     */
+    public $silosDescription;
+
+    /**
+     * @var string
+     */
     public $type;
+
+    /**
+     * @var string
+     */
+    public $typeDescription;
 
     public function parseBasicData(\DOMNodeList $domNodes)
     {
@@ -19,8 +95,14 @@ class Result {
             if ($child->nodeName == 'Gmina') $this->commune = $child->textContent;
             if ($child->nodeName == 'Powiat') $this->county = $child->textContent;
             if ($child->nodeName == 'Wojewodztwo') $this->voivodeship = $child->textContent;
-            if ($child->nodeName == 'Typ') $this->type = $child->textContent;
-            if ($child->nodeName == 'SilosID') $this->silosID = (int)$child->textContent;
+            if ($child->nodeName == 'Typ') {
+                $this->type = $child->textContent;
+                $this->typeDescription = static::getTypeDescriptionByAbbreviation($this->type);
+            }
+            if ($child->nodeName == 'SilosID') {
+                $this->silosID = (int)$child->textContent;
+                $this->silosDescription = static::getSilosDescriptionById($this->silosID);
+            }
         }
     }
 
@@ -28,50 +110,55 @@ class Result {
     {
         if (!empty($details->regon)) $this->regon = $details->regon;
         if (!empty($details->nip)) $this->nip = $details->nip;
-        if (!empty($details->house)) $this->street .= ' ' . $details->house;
-        if (!empty($details->flat)) $this->street .= '/' . $details->flat;
+        if (!empty($details->house)) $this->house = $details->house;
+        if (!empty($details->flat)) $this->flat = $details->flat;
+    }
 
-        if (!empty($this->type)) {
-            switch ($this->type) {
-                case 'P':
-                    $this->typeDescription = 'jednostka prawna';
-                    break;
-                case 'F':
-                    $this->typeDescription = 'jednostka fizyczna (os. fizyczna prowadząca działalność gospodarczą)';
-                    break;
-                case 'LP':
-                    $this->typeDescription = 'jednostka lokalna jednostki prawnej';
-                    break;
-                case 'LF':
-                    $this->typeDescription = 'jednostka lokalna jednostki fizycznej';
-                    break;
-            }
-        } else {
-            $this->type = '';
-            $this->typeDescription = '';
+    /**
+     * Returns user friendly name of silos by it's ID
+     *
+     * @param int $silosType
+     *
+     * @return string
+     */
+    public static function getSilosDescriptionById(int $silosType) : string
+    {
+        switch ($silosType) {
+            case 1:
+                return 'Miejsce prowadzenia działalności CEIDG';
+            case 2:
+                return 'Miejsce prowadzenia działalności Rolniczej';
+            case 3:
+                return 'Miejsce prowadzenia działalności pozostałej';
+            case 4:
+                return 'Miejsce prowadzenia działalności zlikwidowanej w starym systemie KRUPGN';
+            case 6:
+                return 'Miejsce prowadzenia działalności jednostki prawnej';
+            default:
+                return "";
         }
+    }
 
-        if (!empty($this->silosID)) {
-            switch ($this->silosID) {
-                case 1:
-                    $this->silosDescription = 'Miejsce prowadzenia działalności CEIDG';
-                    break;
-                case 2:
-                    $this->silosDescription = 'Miejsce prowadzenia działalności Rolniczej';
-                    break;
-                case 3:
-                    $this->silosDescription = 'Miejsce prowadzenia działalności pozostałej';
-                    break;
-                case 4:
-                    $this->silosDescription = 'Miejsce prowadzenia działalności zlikwidowanej w starym systemie KRUPGN';
-                    break;
-                case 6:
-                    $this->silosDescription = 'Miejsce prowadzenia działalności jednostki prawnej';
-                    break;
-            }
-        } else {
-            $this->silosID = '';
-            $this->silosDescription = '';
+    /**
+     * Returns user friendly type description by it's one/two letter abbreviation
+     *
+     * @param string $type
+     *
+     * @return string
+     */
+    public static function getTypeDescriptionByAbbreviation(string $type) : string
+    {
+        switch ($type) {
+            case 'P':
+                return 'jednostka prawna';
+            case 'F':
+                return 'jednostka fizyczna (os. fizyczna prowadząca działalność gospodarczą)';
+            case 'LP':
+                return 'jednostka lokalna jednostki prawnej';
+            case 'LF':
+                return 'jednostka lokalna jednostki fizycznej';
+            default:
+                return "";
         }
     }
 }

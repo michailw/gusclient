@@ -2,6 +2,7 @@
 
 namespace Tests\MWojtowicz\GusClient;
 
+use MWojtowicz\GusClient\Exception\InvalidRegon;
 use PHPUnit\Framework\TestCase;
 use MWojtowicz\GusClient\RegonClient;
 
@@ -140,6 +141,77 @@ class RegonClientTest extends TestCase
     }
 
     /**
+     * @see RegonClient::validateRegon()
+     */
+    public function testValidateRegonWithEmptyData()
+    {
+        $this->expectException(InvalidRegon::class);
+
+        $data = [];
+
+        $client = $this
+            ->getMockBuilder(RegonClient::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["validateRegonItem"])
+            ->getMock();
+
+        $client
+            ->expects($this->never())
+            ->method("validateRegonItem");
+
+        $client->validateRegon($data);
+    }
+
+    /**
+     * @see RegonClient::validateRegon()
+     */
+    public function testValidateRegonWithInvalidDataArray()
+    {
+        $this->expectException(InvalidRegon::class);
+
+        $regon = "12345678512345";
+        $data = [$regon];
+
+        $client = $this
+            ->getMockBuilder(RegonClient::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["validateRegonItem"])
+            ->getMock();
+
+        $client
+            ->expects($this->once())
+            ->method("validateRegonItem")
+            ->with($regon)
+            ->willReturn(false);
+
+        $client->validateRegon($data);
+    }
+
+    /**
+     * @see RegonClient::validateRegon()
+     */
+    public function testValidateRegonWithInvalidDataString()
+    {
+        $this->expectException(InvalidRegon::class);
+
+        $regon = "12345678512345";
+
+        $client = $this
+            ->getMockBuilder(RegonClient::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["validateRegonItem"])
+            ->getMock();
+
+        $client
+            ->expects($this->once())
+            ->method("validateRegonItem")
+            ->with($regon)
+            ->willReturn(false);
+
+        $client->validateRegon($regon);
+    }
+
+    /**
      * @see RegonClient::validateRegonItem()
      */
     public function testValidateRegonItem()
@@ -172,6 +244,22 @@ class RegonClientTest extends TestCase
 
         foreach ($data as $item) {
             $this->assertFalse($client->validateRegonItem($item), "Bad regon: {$item}");
+        }
+    }
+
+    /**
+     * @see RegonClient::validateRegonItem()
+     */
+    public function testValidateRegonItem14Digits()
+    {
+        $data = [
+            "12345678512347",
+        ];
+
+        $client = new RegonClient("TEST");
+
+        foreach ($data as $item) {
+            $this->assertTrue($client->validateRegonItem($item), "Bad regon: {$item}");
         }
     }
 }

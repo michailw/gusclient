@@ -2,6 +2,7 @@
 
 namespace Tests\MWojtowicz\GusClient;
 
+use MWojtowicz\GusClient\Exception\InvalidNip;
 use PHPUnit\Framework\TestCase;
 use MWojtowicz\GusClient\NIPClient;
 
@@ -138,5 +139,76 @@ class NIPClientTest extends TestCase
         foreach ($data as $item) {
             $this->assertFalse($client->validateNipItem($item), "Bad regon: {$item}");
         }
+    }
+
+    /**
+     * @see NipClient::validateNip()
+     */
+    public function testvalidateNipWithEmptyData()
+    {
+        $this->expectException(InvalidNip::class);
+
+        $data = [];
+
+        $client = $this
+            ->getMockBuilder(NipClient::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["validateNipItem"])
+            ->getMock();
+
+        $client
+            ->expects($this->never())
+            ->method("validateNipItem");
+
+        $client->validateNip($data);
+    }
+
+    /**
+     * @see NipClient::validateNip()
+     */
+    public function testvalidateNipWithInvalidDataArray()
+    {
+        $this->expectException(InvalidNip::class);
+
+        $nip = "12345678512345";
+        $data = [$nip];
+
+        $client = $this
+            ->getMockBuilder(NipClient::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["validateNipItem"])
+            ->getMock();
+
+        $client
+            ->expects($this->once())
+            ->method("validateNipItem")
+            ->with($nip)
+            ->willReturn(false);
+
+        $client->validateNip($data);
+    }
+
+    /**
+     * @see NipClient::validateNip()
+     */
+    public function testvalidateNipWithInvalidDataString()
+    {
+        $this->expectException(InvalidNip::class);
+
+        $nip = "12345678512345";
+
+        $client = $this
+            ->getMockBuilder(NipClient::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["validateNipItem"])
+            ->getMock();
+
+        $client
+            ->expects($this->once())
+            ->method("validateNipItem")
+            ->with($nip)
+            ->willReturn(false);
+
+        $client->validateNip($nip);
     }
 }

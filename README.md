@@ -1,7 +1,8 @@
 GUS API Client
 ==============
 
-Travis build on master branch ![Travis build on master](https://travis-ci.org/MWojtowicz/gusclient.svg?branch=master)
+![Travis build on master](https://travis-ci.org/MWojtowicz/gusclient.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/MWojtowicz/gusclient/badge.svg?branch=master)](https://coveralls.io/github/MWojtowicz/gusclient?branch=master)
 
 # 1. Installation
 
