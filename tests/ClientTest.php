@@ -516,16 +516,6 @@ class ClientTest extends TestCase
     }
 
     /**
-     * @see Client::__doRequest()
-     *
-     * @TODO Refactor method to make it testable
-     */
-    public function testDoRequest()
-    {
-        $this->markTestIncomplete();
-    }
-
-    /**
      * @see Client::clearInput()
      */
     public function testClearInputArray()
