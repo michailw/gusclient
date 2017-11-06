@@ -61,18 +61,18 @@ abstract class Client extends \SoapClient
     /**
      * GUS Client constructor.
      *
-     * @param mixed $userKey - GUS API key
+     * @param string $userKey - GUS API key
      * @param string $mode - possible values: TEST, PRODUCTION
      * @param array $soapOptions http://php.net/manual/en/soapclient.soapclient.php
      */
-    public function __construct($userKey, $mode = "TEST", $soapOptions = [])
+    public function __construct(string $userKey = "", string $mode = "TEST", array $soapOptions = [])
     {
+        if (empty($userKey)) {
+            $userKey = getenv("GUSAPI_KEY");
+        }
+
         $this->_userKey = $userKey;
         $this->_mode = $mode;
-
-        if (!is_array($soapOptions)) {
-            $soapOptions = [];
-        }
 
         if (empty($soapOptions['stream_context'])) {
             $soapOptions['stream_context'] = stream_context_create();
@@ -86,8 +86,6 @@ abstract class Client extends \SoapClient
         $soapOptions['location'] = $this->_getServiceUrl();
 
         parent::__construct($this->_getWsdlUrl(), $soapOptions);
-
-        $this->_prepareSession();
     }
 
     /**
@@ -142,6 +140,8 @@ abstract class Client extends \SoapClient
      */
     protected function findBy($paramName, $paramValue)
     {
+        $this->prepareSession();
+
         $headers = [
             new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->_getMethodUrl('DaneSzukaj'), 0),
             new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->_getServiceUrl(), 0)
@@ -149,7 +149,7 @@ abstract class Client extends \SoapClient
         $this->__setSoapHeaders($headers);
         $params = ['pParametryWyszukiwania' => [$paramName => $paramValue]];
 
-        $result = static::DaneSzukaj($params);
+        $result = $this->callApi("DaneSzukaj", $params);
         if (empty($result->DaneSzukajResult)) {
             throw new Exception\NotFound();
         }
@@ -203,7 +203,7 @@ abstract class Client extends \SoapClient
                 $prefix = 'praw';
         }
 
-        $result = $this->DanePobierzPelnyRaport($params);
+        $result = $this->callApi("DanePobierzPelnyRaport", $params);
         if (empty($result->DanePobierzPelnyRaportResult)) {
             throw new Exception\NotFound();
         }
@@ -262,7 +262,7 @@ abstract class Client extends \SoapClient
      */
     public function logout()
     {
-        $this->_setStreamContextSession(null);
+        $this->setStreamContextSession(null);
         $headers = [
             new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->_getMethodUrl('Wyloguj'), 0),
             new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->_getServiceUrl(), 0)
@@ -275,7 +275,7 @@ abstract class Client extends \SoapClient
 
         if ($result) {
             $this->storeSession(null);
-            $this->_setStreamContextSession(null);
+            $this->setStreamContextSession(null);
         }
 
         return $result ? true : false;
@@ -330,7 +330,7 @@ abstract class Client extends \SoapClient
         ];
         $this->__setSoapHeaders($headers);
 
-        $result = static::GetValue(['pNazwaParametru' => $paramName]);
+        $result = $this->callApi("GetValue", ['pNazwaParametru' => $paramName]);
         return trim($result->GetValueResult);
     }
 
@@ -379,7 +379,7 @@ abstract class Client extends \SoapClient
      *
      * @param string|null $sid Session ID
      */
-    private function _setStreamContextSession($sid = null)
+    public function setStreamContextSession($sid = null)
     {
         $options = [];
         if (!empty($sid)) {
@@ -394,7 +394,7 @@ abstract class Client extends \SoapClient
      *
      * @param array $options Stream context options
      */
-    protected function setStreamContext($options)
+    public function setStreamContext($options)
     {
         stream_context_set_params($this->_streamContext, ['options' => $options]);
     }
@@ -404,24 +404,24 @@ abstract class Client extends \SoapClient
      *
      * @throws Exception\Login
      */
-    private function _prepareSession()
+    public function prepareSession()
     {
         if (empty($this->_sessionId)) {
             $session = $this->getSessionId();
 
             if (!empty($session)) {
-                $this->_setStreamContextSession($session);
+                $this->setStreamContextSession($session);
                 $sessionStatus = $this->getSessionStatus();
+                $this->setStreamContextSession(null);
                 if ($sessionStatus == Constants::SESSION_ALIVE) {
                     $this->_sessionId = $session;
-                    $this->_setStreamContextSession(null);
                 }
             }
 
             if (empty($this->_sessionId)) {
-                $this->_login();
+                $this->login();
             }
-            $this->_setStreamContextSession($this->_sessionId);
+            $this->setStreamContextSession($this->_sessionId);
         }
     }
 
@@ -430,7 +430,7 @@ abstract class Client extends \SoapClient
      *
      * @return string
      */
-    protected function getSessionId()
+    public function getSessionId()
     {
         return trim($this->readSessionFile());
     }
@@ -461,7 +461,7 @@ abstract class Client extends \SoapClient
      *
      * @throws Exception\Login
      */
-    private function _login()
+    public function login()
     {
         $headers = [
             new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->_getMethodUrl('Zaloguj'), 0),
@@ -469,7 +469,7 @@ abstract class Client extends \SoapClient
         ];
         $this->__setSoapHeaders($headers);
 
-        $result = static::Zaloguj(['pKluczUzytkownika' => $this->_userKey]);
+        $result = $this->callApi("Zaloguj", ['pKluczUzytkownika' => $this->_userKey]);
         if (empty($result)) {
             throw new Exception\Login();
         }
@@ -505,6 +505,19 @@ abstract class Client extends \SoapClient
             return current($matches);
         }
         return null;
+    }
+
+    /**
+     * Calls static SOAP methods
+     *
+     * @param string $method
+     * @param array $params
+     *
+     * @return mixed
+     */
+    protected function callApi(string $method, array $params)
+    {
+        return static::$method($params);
     }
 
     /**

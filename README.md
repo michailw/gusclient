@@ -1,8 +1,11 @@
 GUS API Client
 ==============
 
+[![Latest Stable Version](https://poser.pugx.org/mwojtowicz/gusclient/v/stable)](https://packagist.org/packages/mwojtowicz/gusclient)
 ![Travis build on master](https://travis-ci.org/MWojtowicz/gusclient.svg?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/MWojtowicz/gusclient/badge.svg?branch=master)](https://coveralls.io/github/MWojtowicz/gusclient?branch=master)
+[![Total Downloads](https://poser.pugx.org/mwojtowicz/gusclient/downloads)](https://packagist.org/packages/mwojtowicz/gusclient)
+[![License](https://poser.pugx.org/mwojtowicz/gusclient/license)](https://packagist.org/packages/mwojtowicz/gusclient)
 
 # 1. Installation
 
