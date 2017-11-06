@@ -48,9 +48,9 @@ class IntegrationTest extends TestCase
          */
         $result = $client->find($input);
 
-        $this->assertEquals($result->nip, $input);
-        $this->assertEquals($result->name, $name);
-        $this->assertEquals($result->regon, $regon);
+        $this->assertEquals($input . "00000", $result->nip);
+        $this->assertEquals($name, $result->name);
+        $this->assertEquals($regon, $result->regon);
     }
 
     /**
@@ -74,15 +74,15 @@ class IntegrationTest extends TestCase
 
         $this->assertArrayHasKey("0", $result);
         $this->assertInstanceOf(Result::class, $result[0]);
-        $this->assertEquals($result[0]->nip, $input1);
-        $this->assertEquals($result[0]->name, $name1);
-        $this->assertEquals($result[0]->regon, $regon1);
+        $this->assertEquals($input1 . "00000", $result[0]->nip);
+        $this->assertEquals($name1, $result[0]->name);
+        $this->assertEquals($regon1, $result[0]->regon);
 
         $this->assertArrayHasKey("1", $result);
         $this->assertInstanceOf(Result::class, $result[1]);
-        $this->assertEquals($result[1]->nip, $input2);
-        $this->assertEquals($result[1]->name, $name2);
-        $this->assertEquals($result[1]->regon, $regon2);
+        $this->assertEquals($input2 . "00000", $result[1]->nip);
+        $this->assertEquals($name2, $result[1]->name);
+        $this->assertEquals($regon2, $result[1]->regon);
     }
 
     /**
@@ -100,8 +100,8 @@ class IntegrationTest extends TestCase
          */
         $result = $client->find($input);
 
-        $this->assertEquals($result->nip, $nip);
-        $this->assertEquals($result->name, $name);
-        $this->assertEquals($result->regon, $input);
+        $this->assertEquals($nip . "00000", $result->nip);
+        $this->assertEquals($name, $result->name);
+        $this->assertEquals($input, $result->regon);
     }
 }

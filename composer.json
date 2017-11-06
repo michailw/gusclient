@@ -26,5 +26,15 @@
         "psr-4" : {
             "Tests\\MWojtowicz\\GusClient\\" : "tests/"
         }
+    },
+    "archive": {
+        "exclude": [
+            "tests/",
+            ".gitignore",
+            ".travis.yml",
+            "phpunit.xml.dist",
+            "build/",
+            "composer.lock"
+        ]
     }
 }
