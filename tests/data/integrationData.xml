@@ -3,5 +3,13 @@
     <onet>
         <nip>7340009469</nip>
         <name>ONET SPÓŁKA AKCYJNA</name>
+        <regon>001337730</regon>
+        <krs>0000007763</krs>
     </onet>
+    <interia>
+        <nip>5272644300</nip>
+        <name>GRUPA INTERIA.PL SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ SPÓŁKA KOMANDYTOWA</name>
+        <regon>142734048</regon>
+        <krs>0000416593</krs>
+    </interia>
 </root>
