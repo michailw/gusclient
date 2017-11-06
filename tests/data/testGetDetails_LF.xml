@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root>
+    <dane>
+        <fiz_adSiedzNumerNieruchomosci>1</fiz_adSiedzNumerNieruchomosci>
+    </dane>
+    <dane>
+        <fiz_adSiedzNumerLokalu>2</fiz_adSiedzNumerLokalu>
+    </dane>
+    <dane>
+        <fiz_regon14>12345678901234</fiz_regon14>
+    </dane>
+    <dane>
+        <fiz_nip>12345678901</fiz_nip>
+    </dane>
+</root>

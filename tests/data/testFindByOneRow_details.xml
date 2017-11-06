@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root>
+    <dane>
+        <Regon>123456789</Regon>
+        <RegonLink>http://123456789</RegonLink>
+        <Nazwa>Name</Nazwa>
+        <Ulica>Street</Ulica>
+        <Miejscowosc>City</Miejscowosc>
+        <KodPocztowy>PostalCode</KodPocztowy>
+        <Gmina>Commune</Gmina>
+        <Powiat>County</Powiat>
+        <Wojewodztwo>Voivodeship</Wojewodztwo>
+        <Typ>Type</Typ>
+        <SilosID>5</SilosID>
+    </dane>
+</root>
