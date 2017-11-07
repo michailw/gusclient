@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Tests\MWojtowicz\GusClient\Utils;
 
@@ -29,7 +30,7 @@ class ClientProxy extends Client
     /**
      * @inheritdoc
      */
-    public function clearItem($item)
+    public function clearItem(string $item) : string
     {
         return parent::clearItem($item);
     }
@@ -37,7 +38,7 @@ class ClientProxy extends Client
     /**
      * @inheritdoc
      */
-    public function findBy($paramName, $paramValue)
+    public function findBy(string $paramName, string $paramValue)
     {
         return parent::findBy($paramName, $paramValue);
     }
