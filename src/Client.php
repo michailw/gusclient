@@ -280,9 +280,9 @@ abstract class Client extends \SoapClient
      *
      * @param \DOMElement $node
      *
-     * @return Result
+     * @return Result|mixed
      */
-    private function parseResult(\DOMElement $node) : Result
+    private function parseResult(\DOMElement $node)
     {
         $result = new Result();
         if ($node->hasChildNodes()) {

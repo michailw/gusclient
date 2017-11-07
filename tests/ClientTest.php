@@ -9,6 +9,7 @@ use MWojtowicz\GusClient\Result;
 use PHPUnit\Framework\TestCase;
 use MWojtowicz\GusClient\Client;
 use Tests\MWojtowicz\GusClient\Utils\ClientProxy;
+use Tests\MWojtowicz\GusClient\Utils\FakeResult;
 
 class ClientTest extends TestCase
 {
@@ -663,7 +664,14 @@ class ClientTest extends TestCase
                 ]
             );
 
-        $this->assertEquals($expectation, $client->findBy($paramName, $paramValue));
+        $client->setResultClassName(FakeResult::class);
+
+        /**
+         * @var FakeResult $result
+         */
+        $result = $client->findBy($paramName, $paramValue);
+
+        $this->assertEquals($expectation, $result->result);
     }
 
     /**
