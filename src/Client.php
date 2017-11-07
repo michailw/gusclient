@@ -32,27 +32,27 @@ abstract class Client extends \SoapClient
     /**
      * @var string User Key from GUS
      */
-    private $_userKey;
+    private $userKey;
 
     /**
      * @var string Current session id
      */
-    private $_sessionId;
+    private $sessionId;
 
     /**
      * @var resource File handler for session store
      */
-    private $_sessionFile;
+    private $sessionFile;
 
     /**
      * @var string Mode of this tool, possible values: TEST, PRODUCTION
      */
-    private $_mode;
+    private $mode;
 
     /**
      * @var resource Stream context handler for \SoapClient
      */
-    protected $_streamContext;
+    protected $streamContext;
 
     /**
      * @var string Class which result item has to be casted
@@ -72,21 +72,21 @@ abstract class Client extends \SoapClient
             $userKey = getenv("GUSAPI_KEY");
         }
 
-        $this->_userKey = $userKey;
-        $this->_mode = $mode;
+        $this->userKey = $userKey;
+        $this->mode = $mode;
 
         if (empty($soapOptions['stream_context'])) {
             $soapOptions['stream_context'] = stream_context_create();
         }
 
-        $this->_streamContext = $soapOptions['stream_context'];
+        $this->streamContext = $soapOptions['stream_context'];
         $soapOptions['soap_version'] = SOAP_1_2;
         $soapOptions['cache_wsdl'] = WSDL_CACHE_NONE;
         $soapOptions['encoding'] = 'UTF-8';
         $soapOptions['exceptions'] = 1;
-        $soapOptions['location'] = $this->_getServiceUrl();
+        $soapOptions['location'] = $this->getServiceUrl();
 
-        parent::__construct($this->_getWsdlUrl(), $soapOptions);
+        parent::__construct($this->getWsdlUrl(), $soapOptions);
     }
 
     /**
@@ -149,8 +149,18 @@ abstract class Client extends \SoapClient
         $this->prepareSession();
 
         $headers = [
-            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->_getMethodUrl('DaneSzukaj'), false),
-            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->_getServiceUrl(), false)
+            new \SoapHeader(
+                'http://www.w3.org/2005/08/addressing',
+                'Action',
+                $this->getMethodUrl('DaneSzukaj'),
+                false
+            ),
+            new \SoapHeader(
+                'http://www.w3.org/2005/08/addressing',
+                'To',
+                $this->getServiceUrl(),
+                false
+            )
         ];
         $this->__setSoapHeaders($headers);
         $params = ['pParametryWyszukiwania' => [$paramName => $paramValue]];
@@ -193,8 +203,18 @@ abstract class Client extends \SoapClient
     public function getDetails(string $regon, string $type = 'F') : \stdClass
     {
         $headers = [
-            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->_getMethodUrl('DaneSzukaj'), false),
-            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->_getServiceUrl(), false)
+            new \SoapHeader(
+                'http://www.w3.org/2005/08/addressing',
+                'Action',
+                $this->getMethodUrl('DaneSzukaj'),
+                false
+            ),
+            new \SoapHeader(
+                'http://www.w3.org/2005/08/addressing',
+                'To',
+                $this->getServiceUrl(),
+                false
+            )
         ];
         $this->__setSoapHeaders($headers);
         $params = [
@@ -231,10 +251,20 @@ abstract class Client extends \SoapClient
                 if ($node->nodeName == 'dane') {
                     for ($j = 0; $j < $node->childNodes->length; $j++) {
                         $child = $node->childNodes->item($j);
-                        if ($child->nodeName == $prefix . '_adSiedzNumerNieruchomosci') $data->house = $child->textContent;
-                        if ($child->nodeName == $prefix . '_adSiedzNumerLokalu') $data->flat = $child->textContent;
-                        if ($child->nodeName == $prefix . '_regon14') $data->regon = $child->textContent;
-                        if ($child->nodeName == $prefix . '_nip') $data->nip = $child->textContent;
+                        switch ($child->nodeName) {
+                            case $prefix . '_adSiedzNumerNieruchomosci':
+                                $data->house = $child->textContent;
+                                break;
+                            case $prefix . '_adSiedzNumerLokalu':
+                                $data->flat = $child->textContent;
+                                break;
+                            case $prefix . '_regon14':
+                                $data->regon = $child->textContent;
+                                break;
+                            case $prefix . '_nip':
+                                $data->nip = $child->textContent;
+                                break;
+                        }
                     }
                 }
             }
@@ -276,13 +306,13 @@ abstract class Client extends \SoapClient
     {
         $this->setStreamContextSession(null);
         $headers = [
-            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->_getMethodUrl('Wyloguj'), false),
-            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->_getServiceUrl(), false)
+            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->getMethodUrl('Wyloguj'), false),
+            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->getServiceUrl(), false)
         ];
         $this->__setSoapHeaders($headers);
 
         $result = $this->Wyloguj([
-            'pIdentyfikatorSesji' => $this->_sessionId
+            'pIdentyfikatorSesji' => $this->sessionId
         ])->WylogujResult;
 
         if ($result) {
@@ -337,8 +367,8 @@ abstract class Client extends \SoapClient
     public function getApiValue(string $paramName) : ?string
     {
         $headers = [
-            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->_getMethodUrl('GetValue'), false),
-            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->_getServiceUrl(), false)
+            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->getMethodUrl('GetValue'), false),
+            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->getServiceUrl(), false)
         ];
         $this->__setSoapHeaders($headers);
 
@@ -350,9 +380,9 @@ abstract class Client extends \SoapClient
      * Returns url for \SoapClient, based on mode.
      * @return string
      */
-    private function _getServiceUrl() : string
+    private function getServiceUrl() : string
     {
-        switch ($this->_mode) {
+        switch ($this->mode) {
             case Constants::MODE_PRODUCTION:
                 return Constants::URL_PRODUCTION;
             default:
@@ -364,9 +394,9 @@ abstract class Client extends \SoapClient
      * Returns WSDL file url for \SoapClient, based on mode.
      * @return string
      */
-    private function _getWsdlUrl() : string
+    private function getWsdlUrl() : string
     {
-        switch ($this->_mode) {
+        switch ($this->mode) {
             case Constants::MODE_PRODUCTION:
                 return Constants::URL_WSDL_PRODUCTION;
             default:
@@ -381,7 +411,7 @@ abstract class Client extends \SoapClient
      *
      * @return string
      */
-    private function _getMethodUrl($methodName) : string
+    private function getMethodUrl($methodName) : string
     {
         return isset(self::$methodUrls[$methodName]) ? self::$methodUrls[$methodName] : '';
     }
@@ -408,7 +438,7 @@ abstract class Client extends \SoapClient
      */
     public function setStreamContext(array $options)
     {
-        stream_context_set_params($this->_streamContext, ['options' => $options]);
+        stream_context_set_params($this->streamContext, ['options' => $options]);
     }
 
     /**
@@ -418,7 +448,7 @@ abstract class Client extends \SoapClient
      */
     public function prepareSession()
     {
-        if (empty($this->_sessionId)) {
+        if (empty($this->sessionId)) {
             $session = $this->getSessionId();
 
             if (!empty($session)) {
@@ -426,14 +456,14 @@ abstract class Client extends \SoapClient
                 $sessionStatus = $this->getSessionStatus();
                 $this->setStreamContextSession(null);
                 if ($sessionStatus == Constants::SESSION_ALIVE) {
-                    $this->_sessionId = $session;
+                    $this->sessionId = $session;
                 }
             }
 
-            if (empty($this->_sessionId)) {
+            if (empty($this->sessionId)) {
                 $this->login();
             }
-            $this->setStreamContextSession($this->_sessionId);
+            $this->setStreamContextSession($this->sessionId);
         }
     }
 
@@ -457,12 +487,12 @@ abstract class Client extends \SoapClient
         $filePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . Constants::SESSIONFILE_NAME;
         $sessionFileExists = file_exists($filePath);
 
-        if ($this->_sessionFile === null) {
-            $this->_sessionFile = fopen($filePath, $sessionFileExists ? 'r+' : 'w');
+        if ($this->sessionFile === null) {
+            $this->sessionFile = fopen($filePath, $sessionFileExists ? 'r+' : 'w');
         }
 
         if ($sessionFileExists) {
-            return fread($this->_sessionFile, 100);
+            return fread($this->sessionFile, 100);
         }
 
         return "";
@@ -476,12 +506,12 @@ abstract class Client extends \SoapClient
     public function login()
     {
         $headers = [
-            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->_getMethodUrl('Zaloguj'), false),
-            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->_getServiceUrl(), false)
+            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'Action', $this->getMethodUrl('Zaloguj'), false),
+            new \SoapHeader('http://www.w3.org/2005/08/addressing', 'To', $this->getServiceUrl(), false)
         ];
         $this->__setSoapHeaders($headers);
 
-        $result = $this->callApi("Zaloguj", ['pKluczUzytkownika' => $this->_userKey]);
+        $result = $this->callApi("Zaloguj", ['pKluczUzytkownika' => $this->userKey]);
         if (empty($result)) {
             throw new Exception\Login();
         }
@@ -495,13 +525,13 @@ abstract class Client extends \SoapClient
      */
     private function storeSession(?string $sessionId)
     {
-        $this->_sessionId = $sessionId;
+        $this->sessionId = $sessionId;
 
-        if ($this->_sessionFile == null) {
+        if ($this->sessionFile == null) {
             $this->getSessionId();
         }
-        ftruncate($this->_sessionFile, 0);
-        fwrite($this->_sessionFile, $this->_sessionId . PHP_EOL);
+        ftruncate($this->sessionFile, 0);
+        fwrite($this->sessionFile, $this->sessionId . PHP_EOL);
     }
 
     /**
@@ -509,7 +539,11 @@ abstract class Client extends \SoapClient
      */
     public function __doRequest($req, $location, $action, $version = SOAP_1_2, $one_way = 0)
     {
-        $req = preg_replace('@<([a-z0-9]+):Action>[^<]+</([a-z0-9]+):Action>@', '<$1:Action>' . $action . '</$2:Action>', $req);
+        $req = preg_replace(
+            '@<([a-z0-9]+):Action>[^<]+</([a-z0-9]+):Action>@',
+            '<$1:Action>' . $action . '</$2:Action>',
+            $req
+        );
         $response = parent::__doRequest($req, $location, $action, $version, $one_way);
         $matches = [];
         $match = null;
@@ -538,8 +572,8 @@ abstract class Client extends \SoapClient
      */
     public function __destruct()
     {
-        if ($this->_sessionFile) {
-            fclose($this->_sessionFile);
+        if ($this->sessionFile) {
+            fclose($this->sessionFile);
         }
     }
 }

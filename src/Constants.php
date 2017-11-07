@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 namespace MWojtowicz\GusClient;
 
-interface Constants {
+interface Constants
+{
 
     const URL_TEST       = 'https://wyszukiwarkaregontest.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svc';
     const URL_PRODUCTION = 'https://wyszukiwarkaregon.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svc';

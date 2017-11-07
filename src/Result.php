@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 namespace MWojtowicz\GusClient;
 
-class Result {
+class Result
+{
     /**
      * @var string
      */
@@ -87,32 +88,60 @@ class Result {
     public function parseBasicData(\DOMNodeList $domNodes)
     {
         foreach ($domNodes as $child) {
-            if ($child->nodeName == 'Regon') $this->regon = $child->textContent;
-            if ($child->nodeName == 'RegonLink') $this->regonLink = $child->textContent;
-            if ($child->nodeName == 'Nazwa') $this->name = $child->textContent;
-            if ($child->nodeName == 'Ulica') $this->street = $child->textContent;
-            if ($child->nodeName == 'Miejscowosc') $this->city = $child->textContent;
-            if ($child->nodeName == 'KodPocztowy') $this->postalCode = $child->textContent;
-            if ($child->nodeName == 'Gmina') $this->commune = $child->textContent;
-            if ($child->nodeName == 'Powiat') $this->county = $child->textContent;
-            if ($child->nodeName == 'Wojewodztwo') $this->voivodeship = $child->textContent;
-            if ($child->nodeName == 'Typ') {
-                $this->type = $child->textContent;
-                $this->typeDescription = static::getTypeDescriptionByAbbreviation($this->type);
-            }
-            if ($child->nodeName == 'SilosID') {
-                $this->silosID = (int)$child->textContent;
-                $this->silosDescription = static::getSilosDescriptionById($this->silosID);
+            switch ($child->nodeName) {
+                case 'Regon':
+                    $this->regon = $child->textContent;
+                    break;
+                case 'RegonLink':
+                    $this->regonLink = $child->textContent;
+                    break;
+                case 'Nazwa':
+                    $this->name = $child->textContent;
+                    break;
+                case 'Ulica':
+                    $this->street = $child->textContent;
+                    break;
+                case 'Miejscowosc':
+                    $this->city = $child->textContent;
+                    break;
+                case 'KodPocztowy':
+                    $this->postalCode = $child->textContent;
+                    break;
+                case 'Gmina':
+                    $this->commune = $child->textContent;
+                    break;
+                case 'Powiat':
+                    $this->county = $child->textContent;
+                    break;
+                case 'Wojewodztwo':
+                    $this->voivodeship = $child->textContent;
+                    break;
+                case 'Typ':
+                    $this->type = $child->textContent;
+                    $this->typeDescription = static::getTypeDescriptionByAbbreviation($this->type);
+                    break;
+                case 'SilosID':
+                    $this->silosID = (int)$child->textContent;
+                    $this->silosDescription = static::getSilosDescriptionById($this->silosID);
+                    break;
             }
         }
     }
 
     public function parseDetails($details)
     {
-        if (!empty($details->regon)) $this->regon = $details->regon;
-        if (!empty($details->nip)) $this->nip = $details->nip;
-        if (!empty($details->house)) $this->house = $details->house;
-        if (!empty($details->flat)) $this->flat = $details->flat;
+        if (!empty($details->regon)) {
+            $this->regon = $details->regon;
+        }
+        if (!empty($details->nip)) {
+            $this->nip = $details->nip;
+        }
+        if (!empty($details->house)) {
+            $this->house = $details->house;
+        }
+        if (!empty($details->flat)) {
+            $this->flat = $details->flat;
+        }
     }
 
     /**

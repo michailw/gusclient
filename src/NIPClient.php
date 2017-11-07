@@ -61,7 +61,9 @@ class NIPClient extends Client implements GusClientInterface
      */
     public function validateNipItem($input)
     {
-        if (strlen($input) != 10) return false;
+        if (strlen($input) != 10) {
+            return false;
+        }
 
         $steps = [6, 5, 7, 2, 3, 4, 5, 6, 7];
         $sum = 0;
@@ -70,7 +72,9 @@ class NIPClient extends Client implements GusClientInterface
         }
         $controlDigit = $sum % 11;
         $controlDigit = $controlDigit == 10 ? 0 : $controlDigit;
-        if ($controlDigit == $input[strlen($input) - 1]) return true;
+        if ($controlDigit == $input[strlen($input) - 1]) {
+            return true;
+        }
         return false;
     }
 }

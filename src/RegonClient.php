@@ -60,7 +60,9 @@ class RegonClient extends Client implements GusClientInterface
      */
     public function validateRegonItem($input)
     {
-        if (!in_array(strlen($input), [9, 14])) return false;
+        if (!in_array(strlen($input), [9, 14])) {
+            return false;
+        }
         if (strlen($input) == 9) {
             $steps = [8, 9, 2, 3, 4, 5, 6, 7];
         } else {
@@ -72,7 +74,9 @@ class RegonClient extends Client implements GusClientInterface
         }
         $controlDigit = $sum % 11;
         $controlDigit = $controlDigit == 10 ? 0 : $controlDigit;
-        if ($controlDigit == $input[strlen($input) - 1]) return true;
+        if ($controlDigit == $input[strlen($input) - 1]) {
+            return true;
+        }
         return false;
     }
 }
