@@ -500,11 +500,12 @@ abstract class Client extends \SoapClient
         $req = preg_replace('@<([a-z0-9]+):Action>[^<]+</([a-z0-9]+):Action>@', '<$1:Action>' . $action . '</$2:Action>', $req);
         $response = parent::__doRequest($req, $location, $action, $version, $one_way);
         $matches = [];
+        $match = null;
         preg_match("@<s:Envelope.*</s:Envelope>@s", $response, $matches);
         if (!empty($matches)) {
-            return current($matches);
+            $match = current($matches);
         }
-        return null;
+        return $match;
     }
 
     /**

@@ -13,16 +13,29 @@ GUS API Client
 
 # 2. Usage
 
+Each client is instance of `GusClientInterface`, which has one method `find`.
+Find method accepts as input strings or array of strings.
+
+Before using this library you have to register your user key.
+After you'll be able to put it as constructor argument.
+
+You can either pass this key as environment variable `GUSAPI_KEY`.
+If you won't pass it as constructor argument (it's optional) library will look at environment variable.
+
+Code usage:
+
 ```php
 <?php
-$client = new MWojtowicz\GusClient\Client(<GUS_API_USER_KEY>);
+$nipClient = new MWojtowicz\GusClient\NIPClient(<GUS_API_USER_KEY>);
+$regonClient = new MWojtowicz\GusClient\RegonClient(<GUS_API_USER_KEY>);
+$krsClient = new MWojtowicz\GusClient\KrsClient(<GUS_API_USER_KEY>);
 
-$company   = $client->findByNip('1234567890');
-$companies = $client->findByNip(array('1234567890', '9876054321'));
+$company   = $nipClient->find('1234567890');
+$companies = $nipClient->find(['1234567890', '9876054321']);
 
-$company   = $client->findByRegon('1234567890');
-$companies = $client->findByRegon(array('1234567890', '9876054321'));
+$company   = $regonClient->find('1234567890');
+$companies = $regonClient->find(['1234567890', '9876054321']);
 
-$company   = $client->findByKrs('1234567890');
-$companies = $client->findByKrs(array('1234567890', '9876054321'));
+$company   = $krsClient->find('1234567890');
+$companies = $krsClient->find(['1234567890', '9876054321']);
 ```
