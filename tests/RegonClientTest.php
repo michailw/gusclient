@@ -262,4 +262,16 @@ class RegonClientTest extends TestCase
             $this->assertTrue($client->validateRegonItem($item), "Bad regon: {$item}");
         }
     }
+
+    /**
+     * @see RegonClient::validateRegonItem()
+     */
+    public function testValidateNipItemWrongLength()
+    {
+        $data = "1234";
+
+        $client = new RegonClient("TEST");
+
+        $this->assertFalse($client->validateRegonItem($data));
+    }
 }

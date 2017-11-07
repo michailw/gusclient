@@ -211,4 +211,16 @@ class NIPClientTest extends TestCase
 
         $client->validateNip($nip);
     }
+
+    /**
+     * @see NipClient::validateNipItem()
+     */
+    public function testValidateNipItemWrongLength()
+    {
+        $data = "1234";
+
+        $client = new NIPClient("TEST");
+
+        $this->assertFalse($client->validateNipItem($data));
+    }
 }
