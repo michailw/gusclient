@@ -686,7 +686,7 @@ class ClientTest extends TestCase
         putenv("GUSAPI_KEY=dummyValue");
 
         $reflectionClass = new \ReflectionClass(Client::class);
-        $reflectionProperty = $reflectionClass->getProperty("_userKey");
+        $reflectionProperty = $reflectionClass->getProperty("userKey");
         $reflectionProperty->setAccessible(true);
 
         $client = new ClientProxy("");
@@ -757,7 +757,7 @@ class ClientTest extends TestCase
         ];
 
         $reflectionClass = new \ReflectionClass(Client::class);
-        $reflectionProperty = $reflectionClass->getProperty("_streamContext");
+        $reflectionProperty = $reflectionClass->getProperty("streamContext");
         $reflectionProperty->setAccessible(true);
 
         $client = new ClientProxy();
@@ -908,9 +908,9 @@ class ClientTest extends TestCase
     public function testProductionUrls()
     {
         $reflectionClass = new \ReflectionClass(Client::class);
-        $reflectionMethod1 = $reflectionClass->getMethod("_getWsdlUrl");
+        $reflectionMethod1 = $reflectionClass->getMethod("getWsdlUrl");
         $reflectionMethod1->setAccessible(true);
-        $reflectionMethod2 = $reflectionClass->getMethod("_getServiceUrl");
+        $reflectionMethod2 = $reflectionClass->getMethod("getServiceUrl");
         $reflectionMethod2->setAccessible(true);
 
         $client = new ClientProxy("", Constants::MODE_PRODUCTION);
@@ -925,9 +925,9 @@ class ClientTest extends TestCase
     public function testTestUrls()
     {
         $reflectionClass = new \ReflectionClass(Client::class);
-        $reflectionMethod1 = $reflectionClass->getMethod("_getWsdlUrl");
+        $reflectionMethod1 = $reflectionClass->getMethod("getWsdlUrl");
         $reflectionMethod1->setAccessible(true);
-        $reflectionMethod2 = $reflectionClass->getMethod("_getServiceUrl");
+        $reflectionMethod2 = $reflectionClass->getMethod("getServiceUrl");
         $reflectionMethod2->setAccessible(true);
 
         $client = new ClientProxy("", Constants::MODE_TEST);
@@ -966,7 +966,7 @@ class ClientTest extends TestCase
 
 
         $reflectionClass = new \ReflectionClass(Client::class);
-        $reflectionProperty = $reflectionClass->getProperty("_sessionId");
+        $reflectionProperty = $reflectionClass->getProperty("sessionId");
         $reflectionProperty->setAccessible(true);
 
         $client->login();
